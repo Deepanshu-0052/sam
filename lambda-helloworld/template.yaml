@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Description: "lambda-helloworld - modified for force deployment"
+
+  Sample SAM Template for lambda-helloworld
+
+Globals:
+  Function:
+    Timeout: 20
+    MemorySize: 512
+
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: HelloWorldFunction/
+      Handler: helloworld.App::handleRequest
+      Runtime: java21
+      MemorySize: 512
+      Timeout: 10
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: FirmwareVersionTable
+        - S3ReadPolicy:
+            BucketName: firmware-1bucket
+      Environment:
+        Variables:
+          TABLE_NAME: FirmwareVersionTable
+          BUCKET_NAME: firmware-1bucket
+      Events:                            # ✅ API Gateway trigger added
+        Api:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: post
+
+  FirmwareVersionTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: FirmwareVersionTable
+      AttributeDefinitions:
+        - AttributeName: device_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: device_id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+Outputs:
+  HelloWorldApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  HelloWorldFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt HelloWorldFunction.Arn
+  HelloWorldFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt HelloWorldFunctionRole.Arn
