@@ -1,9 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Description: "lambda-helloworld - modified for force deployment"
-
-  Sample SAM Template for lambda-helloworld
+  Lambda function to generate firmware download link with expiry and store it in DynamoDB with TTL
 
 Globals:
   Function:
@@ -22,13 +20,16 @@ Resources:
       Policies:
         - DynamoDBReadPolicy:
             TableName: FirmwareVersionTable
+        - DynamoDBWritePolicy:
+            TableName: PresignedLinkTable
         - S3ReadPolicy:
             BucketName: firmware-1bucket
       Environment:
         Variables:
           TABLE_NAME: FirmwareVersionTable
+          LINK_TABLE_NAME: PresignedLinkTable
           BUCKET_NAME: firmware-1bucket
-      Events:                            # ✅ API Gateway trigger added
+      Events:
         Api:
           Type: Api
           Properties:
@@ -47,13 +48,22 @@ Resources:
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
 
+  PresignedLinkTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: PresignedLinkTable
+      AttributeDefinitions:
+        - AttributeName: device_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: device_id
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+
 Outputs:
   HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Description: "API Gateway endpoint URL for HelloWorld function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
