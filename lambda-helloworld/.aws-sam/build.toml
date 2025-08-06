@@ -5,9 +5,9 @@ codeuri = "C:\\Users\\deepanshu sharama\\Documents\\sam\\lambda-helloworld\\Hell
 runtime = "java21"
 architecture = "x86_64"
 handler = "helloworld.App::handleRequest"
-source_hash = "cc41261ec288e8b2c5e83c8b77cc453bbc2da98ef12218f99aaf9c430bfa833a"
+source_hash = "61cf3a73d550cff75cd89151b81227adc46b1d7139d786be5b6d838f413970a1"
 manifest_hash = ""
 packagetype = "Zip"
-functions = ["HelloWorldFunction"]
+functions = ["GeneratePresignedFirmwareLink"]
 
 [layer_build_definitions]

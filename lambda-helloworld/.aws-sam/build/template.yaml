@@ -9,45 +9,34 @@ Globals:
     Timeout: 20
     MemorySize: 512
 Resources:
-  HelloWorldFunction:
+  GeneratePresignedFirmwareLink:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: HelloWorldFunction
+      CodeUri: GeneratePresignedFirmwareLink
       Handler: helloworld.App::handleRequest
       Runtime: java21
       MemorySize: 512
       Timeout: 10
       Policies:
       - DynamoDBReadPolicy:
-          TableName: FirmwareVersionTable
+          TableName: staging_FirmwareUploads
       - DynamoDBWritePolicy:
           TableName: PresignedLinkTable
       - S3ReadPolicy:
-          BucketName: firmware-1bucket
+          BucketName: firmwarefile1
       Environment:
         Variables:
-          TABLE_NAME: FirmwareVersionTable
+          FIRMWARE_TABLE: staging_FirmwareUploads
           LINK_TABLE_NAME: PresignedLinkTable
-          BUCKET_NAME: firmware-1bucket
+          BUCKET_NAME: firmwarefile1
       Events:
         Api:
           Type: Api
           Properties:
-            Path: /hello
+            Path: /firmware-check
             Method: post
     Metadata:
-      SamResourceId: HelloWorldFunction
-  FirmwareVersionTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: FirmwareVersionTable
-      AttributeDefinitions:
-      - AttributeName: device_id
-        AttributeType: S
-      KeySchema:
-      - AttributeName: device_id
-        KeyType: HASH
-      BillingMode: PAY_PER_REQUEST
+      SamResourceId: GeneratePresignedFirmwareLink
   PresignedLinkTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -63,7 +52,7 @@ Resources:
         Enabled: true
       BillingMode: PAY_PER_REQUEST
 Outputs:
-  HelloWorldApi:
-    Description: API Gateway endpoint URL for HelloWorld function
+  FirmwareApi:
+    Description: API Gateway endpoint URL for firmware update check
     Value:
-      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/firmware-check/
